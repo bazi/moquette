@@ -9,7 +9,7 @@
         <version>0.8.1</version>
     </parent>
 
-    <artifactId>moquette-broker</artifactId>
+    <artifactId>grouvi-moquette-broker</artifactId>
     <packaging>jar</packaging>
     <name>Moquette - broker</name>
 
