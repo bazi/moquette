@@ -15,13 +15,9 @@
  */
 package io.moquette.interception;
 
+import io.moquette.interception.messages.*;
 import io.moquette.proto.messages.AbstractMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.interception.messages.InterceptConnectMessage;
-import io.moquette.interception.messages.InterceptDisconnectMessage;
-import io.moquette.interception.messages.InterceptPublishMessage;
-import io.moquette.interception.messages.InterceptSubscribeMessage;
-import io.moquette.interception.messages.InterceptUnsubscribeMessage;
 
 /**
  * This interface is used to inject code for intercepting broker events.
@@ -42,6 +38,8 @@ public interface InterceptHandler {
     void onDisconnect(InterceptDisconnectMessage msg);
 
     void onPublish(InterceptPublishMessage msg);
+
+    void onPuback(InterceptPubackMessage msg);
 
     void onSubscribe(InterceptSubscribeMessage msg);
 

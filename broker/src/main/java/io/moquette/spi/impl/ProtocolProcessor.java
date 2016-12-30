@@ -282,6 +282,7 @@ public class ProtocolProcessor {
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientID);
         verifyToActivate(clientID, targetSession);
         targetSession.inFlightAcknowledged(messageID);
+        m_interceptor.notifyTopicPubacked(msg, clientID);
     }
 
     private void verifyToActivate(String clientID, ClientSession targetSession) {

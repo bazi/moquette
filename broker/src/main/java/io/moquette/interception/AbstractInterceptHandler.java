@@ -34,6 +34,9 @@ public abstract class AbstractInterceptHandler implements InterceptHandler {
     public void onPublish(InterceptPublishMessage msg) {}
 
     @Override
+    public void onPuback(InterceptPubackMessage msg) {}
+
+    @Override
     public void onSubscribe(InterceptSubscribeMessage msg) {}
 
     @Override

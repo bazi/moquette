@@ -55,6 +55,11 @@ public class BrokerInterceptorTest {
         }
 
         @Override
+        public void onPuback(InterceptPubackMessage msg) {
+            n.set(60);
+        }
+
+        @Override
         public void onSubscribe(InterceptSubscribeMessage msg) {
             n.set(70);
         }

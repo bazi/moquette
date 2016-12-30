@@ -19,6 +19,7 @@ import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.Interceptor;
 import io.moquette.interception.messages.*;
 import io.moquette.proto.messages.ConnectMessage;
+import io.moquette.proto.messages.PubAckMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 import io.moquette.proto.messages.PublishMessage;
 
@@ -78,6 +79,18 @@ final class BrokerInterceptor implements Interceptor {
                 @Override
                 public void run() {
                     handler.onPublish(new InterceptPublishMessage(msg, clientID));
+                }
+            });
+        }
+    }
+
+    @Override
+    public void notifyTopicPubacked(final PubAckMessage msg, final String clientID) {
+        for (final InterceptHandler handler : this.handlers) {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    handler.onPuback(new InterceptPubackMessage(msg, clientID));
                 }
             });
         }

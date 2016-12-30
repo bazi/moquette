@@ -16,6 +16,7 @@
 package io.moquette.interception;
 
 import io.moquette.proto.messages.ConnectMessage;
+import io.moquette.proto.messages.PubAckMessage;
 import io.moquette.proto.messages.PublishMessage;
 import io.moquette.spi.impl.subscriptions.Subscription;
 
@@ -39,6 +40,8 @@ public interface Interceptor {
     void notifyClientDisconnected(String clientID);
 
     void notifyTopicPublished(PublishMessage msg, String clientID);
+
+    void notifyTopicPubacked(PubAckMessage msg, String clientID);
 
     void notifyTopicSubscribed(Subscription sub);
 
