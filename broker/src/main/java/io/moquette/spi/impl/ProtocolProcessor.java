@@ -353,6 +353,14 @@ public class ProtocolProcessor {
         m_interceptor.notifyTopicPublished(msg, clientID);
     }
 
+    public void internalPublishToClient(String clientId, String message) {
+        ClientSession targetSession = m_sessionsStore.sessionForClient(clientId);
+        verifyToActivate(clientId, targetSession);
+
+        ByteBuffer payload = ByteBuffer.wrap(message.getBytes());
+        directSend(targetSession, "test_topic", QOSType.LEAST_ONE, payload, false, targetSession.nextPacketId());
+    }
+
     /**
      * Intended usage is only for embedded versions of the broker, where the hosting application want to use the
      * broker to send a publish message.

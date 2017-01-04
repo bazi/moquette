@@ -134,6 +134,13 @@ public class Server {
         m_initialized = true;
     }
 
+    public void internalPublishToClient(String clientId, String message) {
+        if (!m_initialized) {
+            throw new IllegalStateException("Can't publish on a server is not yet started");
+        }
+        m_processor.internalPublishToClient(clientId, message);
+    }
+
     /**
      * Use the broker to publish a message. It's intended for embedding applications.
      * It can be used only after the server is correctly started with startServer.
