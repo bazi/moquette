@@ -38,6 +38,8 @@ public class BrokerConstants {
     public static final String ACL_FILE_PROPERTY_NAME = "acl_file";
     public static final String AUTHORIZATOR_CLASS_NAME = "authorizator_class";
     public static final String AUTHENTICATOR_CLASS_NAME = "authenticator_class";
+    public static final String ALLOWED_TOPIC = "allowed_topic";
+    public static final String ALLOWED_QOS = "allowed_qos";
     public static final int PORT = 1883;
     public static final int WEBSOCKET_PORT = 8080;
     public static final String HOST = "0.0.0.0";

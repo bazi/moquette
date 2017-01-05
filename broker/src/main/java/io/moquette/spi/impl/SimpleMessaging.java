@@ -16,6 +16,7 @@
 package io.moquette.spi.impl;
 
 import io.moquette.BrokerConstants;
+import io.moquette.proto.messages.AbstractMessage;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.server.config.IConfig;
@@ -143,7 +144,8 @@ public class SimpleMessaging {
         }
 
         boolean allowAnonymous = Boolean.parseBoolean(props.getProperty(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, "true"));
-        m_processor.init(subscriptions, messagesStore, sessionsStore, authenticator, allowAnonymous, authorizator, m_interceptor);
+        m_processor.init(subscriptions, messagesStore, sessionsStore, authenticator, allowAnonymous, authorizator, m_interceptor,
+                props.getProperty(BrokerConstants.ALLOWED_TOPIC), AbstractMessage.QOSType.valueOf(Byte.decode((props.getProperty(BrokerConstants.ALLOWED_QOS)))));
         return m_processor;
     }
     

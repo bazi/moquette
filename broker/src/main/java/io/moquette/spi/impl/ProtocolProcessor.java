@@ -103,6 +103,8 @@ public class ProtocolProcessor {
     private ISessionsStore m_sessionsStore;
     private IAuthenticator m_authenticator;
     private BrokerInterceptor m_interceptor;
+    private String allowedTopic = null;
+    private AbstractMessage.QOSType allowedQos = null;
 
     //maps clientID to Will testament, if specified on CONNECT
     private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
@@ -124,10 +126,19 @@ public class ProtocolProcessor {
               ISessionsStore sessionsStore,
               IAuthenticator authenticator,
               boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor) {
+        init(subscriptions, storageService, sessionsStore, authenticator, allowAnonymous, authorizator, interceptor, null, null);
+    }
+
+    void init(SubscriptionsStore subscriptions, IMessagesStore storageService,
+              ISessionsStore sessionsStore,
+              IAuthenticator authenticator,
+              boolean allowAnonymous, IAuthorizator authorizator, BrokerInterceptor interceptor, String allowedTopic, AbstractMessage.QOSType allowedQos) {
         this.m_clientIDs = new ConcurrentHashMap<>();
         this.m_interceptor = interceptor;
         this.subscriptions = subscriptions;
         this.allowAnonymous = allowAnonymous;
+        this.allowedTopic = allowedTopic;
+        this.allowedQos = allowedQos;
         m_authorizator = authorizator;
         LOG.trace("subscription tree on init {}", subscriptions.dumpTree());
         m_authenticator = authenticator;
@@ -305,6 +316,19 @@ public class ProtocolProcessor {
     }
     
     public void processPublish(Channel session, PublishMessage msg) {
+        LOG.debug("allowedQos is {}; received Qos is {}", allowedQos, msg.getQos());
+        LOG.debug("allowedTopic is {}; received Topic is {}", allowedTopic, msg.getTopicName());
+
+        if ((allowedQos != null && msg.getQos() != allowedQos) || (allowedTopic != null && !msg.getTopicName().equals(allowedTopic))) {
+            String clientID = NettyUtils.clientID(session);
+            Integer messageID = msg.getMessageID();
+
+            if (msg.getQos() == QOSType.EXACTLY_ONCE) sendPubRec(clientID, messageID);
+            else if (msg.getQos() == QOSType.LEAST_ONE) sendPubAck(clientID, messageID);
+
+            return;
+        }
+
         LOG.trace("PUB --PUBLISH--> SRV executePublish invoked with {}", msg);
         String clientID = NettyUtils.clientID(session);
         final String topic = msg.getTopicName();
@@ -533,6 +557,12 @@ public class ProtocolProcessor {
      * to all interested subscribers.
      * */
     public void processPubRel(Channel channel, PubRelMessage msg) {
+        LOG.debug("allowedQos is {}", allowedQos);
+        if (allowedQos != null && QOSType.EXACTLY_ONCE != allowedQos) {
+            sendPubComp(NettyUtils.clientID(channel), msg.getMessageID());
+            return;
+        }
+
         String clientID = NettyUtils.clientID(channel);
         int messageID = msg.getMessageID();
         LOG.debug("PUB --PUBREL--> SRV processPubRel invoked for clientID {} ad messageID {}", clientID, messageID);
