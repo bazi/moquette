@@ -173,7 +173,7 @@ class MapDBSessionsStore implements ISessionsStore {
     public void inFlightAck(String clientID, int messageID) {
         Map<Integer, String> m = this.m_inflightStore.get(clientID);
         if (m == null) {
-            LOG.error("Can't find the inFlight record for client <{}>", clientID);
+            LOG.debug("Can't find the inFlight record for client <{}>", clientID);
             return;
         }
         m.remove(messageID);
