@@ -636,6 +636,8 @@ public class ProtocolProcessor {
     }
 
     public void processConnectionLost(String clientID, boolean sessionStolen, Channel channel) {
+        m_interceptor.notifyConnectionLost(clientID);
+
         ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel, true);
         m_clientIDs.remove(clientID, oldConnDescr);
         //If already removed a disconnect message was already processed for this clientID

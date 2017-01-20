@@ -37,6 +37,8 @@ public interface InterceptHandler {
 
     void onDisconnect(InterceptDisconnectMessage msg);
 
+    void onConnectionLost(InterceptConnectionLostMessage msg);
+
     void onPublish(InterceptPublishMessage msg);
 
     void onPuback(InterceptPubackMessage msg);

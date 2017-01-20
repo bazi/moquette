@@ -39,6 +39,8 @@ public interface Interceptor {
 
     void notifyClientDisconnected(String clientID);
 
+    void notifyConnectionLost(String clientID);
+
     void notifyTopicPublished(PublishMessage msg, String clientID);
 
     void notifyTopicPubacked(PubAckMessage msg, String clientID);
