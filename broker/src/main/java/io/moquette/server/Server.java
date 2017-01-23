@@ -162,4 +162,16 @@ public class Server {
         m_initialized = false;
         LOG.info("Server stopped");
     }
+
+    /**
+     * Disconnects client
+     *
+     * @param clientId The id of the client
+     */
+    public void disconnectClient(String clientId, String errorMessage) {
+        if (!m_initialized) {
+            throw new IllegalStateException("Server is not yet started");
+        }
+        m_processor.disconnectClient(clientId, errorMessage);
+    }
 }

@@ -188,13 +188,7 @@ public class ProtocolProcessor {
         //if an old client with the same ID already exists close its session.
         if (m_clientIDs.containsKey(msg.getClientID())) {
             LOG.info("Found an existing connection with same client ID <{}>, forcing to close", msg.getClientID());
-            //clean the subscriptions if the old used a cleanSession = true
-            Channel oldChannel = m_clientIDs.get(msg.getClientID()).channel;
-            ClientSession oldClientSession = m_sessionsStore.sessionForClient(msg.getClientID());
-            oldClientSession.disconnect();
-            NettyUtils.sessionStolen(oldChannel, true);
-            oldChannel.close();
-            LOG.debug("Existing connection with same client ID <{}>, forced to close", msg.getClientID());
+            disconnectClient(msg.getClientID(), "duplicate_connection");
         }
 
         ConnectionDescriptor connDescr = new ConnectionDescriptor(msg.getClientID(), channel, msg.isCleanSession());
@@ -383,6 +377,25 @@ public class ProtocolProcessor {
 
         ByteBuffer payload = ByteBuffer.wrap(message.getBytes());
         directSend(targetSession, "test_topic", QOSType.LEAST_ONE, payload, false, targetSession.nextPacketId());
+    }
+
+    public void disconnectClient(String clientId, String errorMessage) {
+        LOG.info("Forcing client with id <{}> to close", clientId);
+        //clean the subscriptions if the old used a cleanSession = true
+        Channel channel = m_clientIDs.get(clientId).channel;
+        ClientSession clientSession = m_sessionsStore.sessionForClient(clientId);
+
+        if (errorMessage != null) {
+            errorMessage = "{\"error\":\"" + errorMessage + "\"}";
+            LOG.info("Sending error message {} to client with id {}", errorMessage, clientId);
+            ByteBuffer payload = ByteBuffer.wrap(errorMessage.getBytes());
+            directSend(clientSession, "test_topic", QOSType.MOST_ONE, payload, false, null);
+        }
+
+        clientSession.disconnect();
+        NettyUtils.sessionStolen(channel, true);
+        channel.close();
+        LOG.debug("Connection with client ID <{}> is forced to close", clientId);
     }
 
     /**
