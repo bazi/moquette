@@ -17,6 +17,7 @@ package io.moquette.spi.impl;
 
 import java.util.Map;
 
+import io.moquette.proto.messages.ConnectMessage;
 import io.moquette.spi.security.IAuthenticator;
 
 /**
@@ -38,5 +39,12 @@ class MockAuthenticator implements IAuthenticator {
         }
         return m_userPwds.get(username).equals(password);
     }
-    
+
+
+    @Override
+    public byte checkValid(ConnectMessage message) {
+        // Not implemented
+        return 0;
+    }
+
 }

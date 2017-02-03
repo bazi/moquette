@@ -174,8 +174,11 @@ public class ProtocolProcessor {
                 failedCredentials(channel);
                 return;
             }
-            if (!m_authenticator.checkValid(msg.getUsername(), pwd)) {
-                failedCredentials(channel);
+            byte validationResultCode = m_authenticator.checkValid(msg);
+            if (validationResultCode != ConnAckMessage.CONNECTION_ACCEPTED) {
+                ConnAckMessage okResp = new ConnAckMessage();
+                okResp.setReturnCode(validationResultCode);
+                channel.writeAndFlush(okResp);
                 channel.close();
                 return;
             }
@@ -188,7 +191,7 @@ public class ProtocolProcessor {
         //if an old client with the same ID already exists close its session.
         if (m_clientIDs.containsKey(msg.getClientID())) {
             LOG.info("Found an existing connection with same client ID <{}>, forcing to close", msg.getClientID());
-            disconnectClient(msg.getClientID(), "duplicate_connection");
+            disconnectClient(msg.getClientID(), "{\"status\":401,\"error\":\"duplicate_connection\"}");
         }
 
         ConnectionDescriptor connDescr = new ConnectionDescriptor(msg.getClientID(), channel, msg.isCleanSession());
@@ -244,7 +247,6 @@ public class ProtocolProcessor {
             republishStoredInSession(clientSession);
         }
         LOG.info("CONNECT processed");
-//        LOG.info("CONNECT clients descriptors {}", m_clientIDs);
     }
 
     private void setIdleTime(ChannelPipeline pipeline, int idleTime) {
@@ -379,16 +381,15 @@ public class ProtocolProcessor {
         directSend(targetSession, "test_topic", QOSType.LEAST_ONE, payload, false, targetSession.nextPacketId());
     }
 
-    public void disconnectClient(String clientId, String errorMessage) {
+    public void disconnectClient(String clientId, String error) {
         LOG.info("Forcing client with id <{}> to close", clientId);
         //clean the subscriptions if the old used a cleanSession = true
         Channel channel = m_clientIDs.get(clientId).channel;
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientId);
 
-        if (errorMessage != null) {
-            errorMessage = "{\"error\":\"" + errorMessage + "\"}";
-            LOG.info("Sending error message {} to client with id {}", errorMessage, clientId);
-            ByteBuffer payload = ByteBuffer.wrap(errorMessage.getBytes());
+        if (error != null) {
+            LOG.info("Sending error message {} to client with id {}", error, clientId);
+            ByteBuffer payload = ByteBuffer.wrap(error.getBytes());
             directSend(clientSession, "test_topic", QOSType.MOST_ONE, payload, false, null);
         }
 

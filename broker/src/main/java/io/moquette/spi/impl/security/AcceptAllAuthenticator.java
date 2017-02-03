@@ -1,5 +1,6 @@
 package io.moquette.spi.impl.security;
 
+import io.moquette.proto.messages.ConnectMessage;
 import io.moquette.spi.security.IAuthenticator;
 
 /**
@@ -9,4 +10,11 @@ public class AcceptAllAuthenticator implements IAuthenticator {
     public boolean checkValid(String username, byte[] password) {
         return true;
     }
+
+    @Override
+    public byte checkValid(ConnectMessage message) {
+        // Not implemented
+        return 0;
+    }
+
 }

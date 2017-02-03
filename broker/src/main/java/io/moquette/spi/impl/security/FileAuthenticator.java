@@ -15,6 +15,7 @@
  */
 package io.moquette.spi.impl.security;
 
+import io.moquette.proto.messages.ConnectMessage;
 import io.moquette.spi.security.IAuthenticator;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
@@ -121,5 +122,11 @@ public class FileAuthenticator implements IAuthenticator {
         String encodedPasswd = new String(Hex.encodeHex(digest));
         return foundPwq.equals(encodedPasswd);
     }
-    
+
+    @Override
+    public byte checkValid(ConnectMessage message) {
+        // Not implemented
+        return 0;
+    }
+
 }

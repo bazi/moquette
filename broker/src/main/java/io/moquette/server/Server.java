@@ -168,10 +168,10 @@ public class Server {
      *
      * @param clientId The id of the client
      */
-    public void disconnectClient(String clientId, String errorMessage) {
+    public void disconnectClient(String clientId, String error) {
         if (!m_initialized) {
             throw new IllegalStateException("Server is not yet started");
         }
-        m_processor.disconnectClient(clientId, errorMessage);
+        m_processor.disconnectClient(clientId, error);
     }
 }

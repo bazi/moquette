@@ -16,6 +16,7 @@
 package io.moquette.server;
 
 import io.moquette.BrokerConstants;
+import io.moquette.proto.messages.ConnectMessage;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.security.IAuthenticator;
@@ -85,5 +86,12 @@ public class ConfigurationClassLoaderTest implements IAuthenticator, IAuthorizat
     public boolean canRead(String topic, String user, String client) {
         return true;
     }
-    
+
+
+    @Override
+    public byte checkValid(ConnectMessage message) {
+        // Not implemented
+        return 0;
+    }
+
 }

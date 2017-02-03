@@ -15,6 +15,8 @@
  */
 package io.moquette.spi.security;
 
+import io.moquette.proto.messages.ConnectMessage;
+
 /**
  * username and password checker
  * 
@@ -23,4 +25,11 @@ package io.moquette.spi.security;
 public interface IAuthenticator {
 
     boolean checkValid(String username, byte[] password);
+
+    /**
+     *
+     * @param message
+     * @return MQTT Connect message Response code
+     */
+    byte checkValid(ConnectMessage message);
 }
