@@ -378,7 +378,7 @@ public class ProtocolProcessor {
         verifyToActivate(clientId, targetSession);
 
         ByteBuffer payload = ByteBuffer.wrap(message.getBytes());
-        directSend(targetSession, "test_topic", QOSType.LEAST_ONE, payload, false, targetSession.nextPacketId());
+        directSend(targetSession, "grouvi_client", QOSType.LEAST_ONE, payload, false, targetSession.nextPacketId());
     }
 
     public void disconnectClient(String clientId, String error) {
@@ -390,7 +390,7 @@ public class ProtocolProcessor {
         if (error != null) {
             LOG.info("Sending error message {} to client with id {}", error, clientId);
             ByteBuffer payload = ByteBuffer.wrap(error.getBytes());
-            directSend(clientSession, "test_topic", QOSType.MOST_ONE, payload, false, null);
+            directSend(clientSession, "grouvi_client", QOSType.MOST_ONE, payload, false, null);
         }
 
         clientSession.disconnect();
