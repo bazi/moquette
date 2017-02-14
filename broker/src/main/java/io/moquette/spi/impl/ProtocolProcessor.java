@@ -707,43 +707,12 @@ public class ProtocolProcessor {
     public void processSubscribe(Channel channel, SubscribeMessage msg) {
         String clientID = NettyUtils.clientID(channel);
         LOG.debug("SUBSCRIBE client <{}> packetID {}", clientID, msg.getMessageID());
-
-        ClientSession clientSession = m_sessionsStore.sessionForClient(clientID);
-        verifyToActivate(clientID, clientSession);
         //ack the client
         SubAckMessage ackMessage = new SubAckMessage();
         ackMessage.setMessageID(msg.getMessageID());
-
-        String user = NettyUtils.userName(channel);
-        List<Subscription> newSubscriptions = new ArrayList<>();
-        for (SubscribeMessage.Couple req : msg.subscriptions()) {
-            if (!m_authorizator.canRead(req.topicFilter, user, clientSession.clientID)) {
-                //send SUBACK with 0x80, the user hasn't credentials to read the topic
-                LOG.debug("topic {} doesn't have read credentials", req.topicFilter);
-                ackMessage.addType( AbstractMessage.QOSType.FAILURE);
-                continue;
-            }
-
-            AbstractMessage.QOSType qos = AbstractMessage.QOSType.valueOf(req.qos);
-            Subscription newSubscription = new Subscription(clientID, req.topicFilter, qos);
-            boolean valid = clientSession.subscribe(req.topicFilter, newSubscription);
-            ackMessage.addType(valid ? qos : AbstractMessage.QOSType.FAILURE);
-            if (valid) {
-                newSubscriptions.add(newSubscription);
-            }
-        }
-
-        //save session, persist subscriptions from session
-        LOG.debug("SUBACK for packetID {}", msg.getMessageID());
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("subscription tree {}", subscriptions.dumpTree());
-        }
+        ackMessage.addType(msg.getQos());
         channel.writeAndFlush(ackMessage);
-
-        //fire the publish
-        for(Subscription subscription : newSubscriptions) {
-            subscribeSingleTopic(subscription);
-        }
+        return;
     }
     
     private boolean subscribeSingleTopic(final Subscription newSubscription) {
