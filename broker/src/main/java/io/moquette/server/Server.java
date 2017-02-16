@@ -138,7 +138,11 @@ public class Server {
         if (!m_initialized) {
             throw new IllegalStateException("Can't publish on a server is not yet started");
         }
-        m_processor.internalPublishToClient(clientId, message);
+        try {
+            m_processor.internalPublishToClient(clientId, message);
+        } catch (RuntimeException ex) {
+            LOG.error("Error sending message to client {}, message <{}>", clientId, message, ex);
+        }
     }
 
     /**
