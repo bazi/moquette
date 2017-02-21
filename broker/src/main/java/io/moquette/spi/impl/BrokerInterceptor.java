@@ -38,7 +38,7 @@ final class BrokerInterceptor implements Interceptor {
 
     BrokerInterceptor(List<InterceptHandler> handlers) {
         this.handlers = handlers;
-        executor = Executors.newFixedThreadPool(1);
+        executor = Executors.newFixedThreadPool(8);
     }
 
     /**
