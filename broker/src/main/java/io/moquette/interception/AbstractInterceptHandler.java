@@ -28,10 +28,10 @@ public abstract class AbstractInterceptHandler implements InterceptHandler {
     public void onConnect(InterceptConnectMessage msg) {}
 
     @Override
-    public void onDisconnect(InterceptDisconnectMessage msg) {}
+    public void onDisconnect(InterceptDisconnectMessage msg, int socketChannelHashCode) {}
 
     @Override
-    public void onConnectionLost(InterceptConnectionLostMessage msg) {}
+    public void onConnectionLost(InterceptConnectionLostMessage msg, int socketChannelHashCode) {}
 
     @Override
     public void onPublish(InterceptPublishMessage msg) {}

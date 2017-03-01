@@ -124,7 +124,7 @@ public class FileAuthenticator implements IAuthenticator {
     }
 
     @Override
-    public byte checkValid(ConnectMessage message) {
+    public byte checkValid(ConnectMessage message, int socketChannelHashCode) {
         // Not implemented
         return 0;
     }

@@ -37,9 +37,9 @@ public interface Interceptor {
 
     void notifyClientConnected(ConnectMessage msg);
 
-    void notifyClientDisconnected(String clientID);
+    void notifyClientDisconnected(String clientID, int socketChannelHashCode);
 
-    void notifyConnectionLost(String clientID);
+    void notifyConnectionLost(String clientID, int socketChannelHashCode);
 
     void notifyTopicPublished(PublishMessage msg, String clientID);
 

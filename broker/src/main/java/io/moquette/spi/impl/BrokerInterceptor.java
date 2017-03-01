@@ -61,24 +61,24 @@ final class BrokerInterceptor implements Interceptor {
     }
 
     @Override
-    public void notifyClientDisconnected(final String clientID) {
+    public void notifyClientDisconnected(final String clientID, int socketChannelHashCode) {
         for (final InterceptHandler handler : this.handlers) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    handler.onDisconnect(new InterceptDisconnectMessage(clientID));
+                    handler.onDisconnect(new InterceptDisconnectMessage(clientID), socketChannelHashCode);
                 }
             });
         }
     }
 
     @Override
-    public void notifyConnectionLost(final String clientID) {
+    public void notifyConnectionLost(final String clientID, int socketChannelHashCode) {
         for (final InterceptHandler handler : this.handlers) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    handler.onConnectionLost(new InterceptConnectionLostMessage(clientID));
+                    handler.onConnectionLost(new InterceptConnectionLostMessage(clientID), socketChannelHashCode);
                 }
             });
         }

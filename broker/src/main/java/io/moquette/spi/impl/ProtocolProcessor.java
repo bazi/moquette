@@ -161,7 +161,6 @@ public class ProtocolProcessor {
             ConnAckMessage okResp = new ConnAckMessage();
             okResp.setReturnCode(ConnAckMessage.IDENTIFIER_REJECTED);
             channel.writeAndFlush(okResp);
-            m_interceptor.notifyClientConnected(msg);
             return;
         }
 
@@ -174,7 +173,7 @@ public class ProtocolProcessor {
                 failedCredentials(channel);
                 return;
             }
-            byte validationResultCode = m_authenticator.checkValid(msg);
+            byte validationResultCode = m_authenticator.checkValid(msg, channel.hashCode());
             if (validationResultCode != ConnAckMessage.CONNECTION_ACCEPTED) {
                 ConnAckMessage okResp = new ConnAckMessage();
                 okResp.setReturnCode(validationResultCode);
@@ -610,12 +609,12 @@ public class ProtocolProcessor {
         //cleanup the will store
         m_willStore.remove(clientID);
         
-        m_interceptor.notifyClientDisconnected(clientID);
+        m_interceptor.notifyClientDisconnected(clientID, channel.hashCode());
         LOG.info("DISCONNECT client <{}> finished", clientID, cleanSession);
     }
 
     public void processConnectionLost(String clientID, boolean sessionStolen, Channel channel) {
-        m_interceptor.notifyConnectionLost(clientID);
+        m_interceptor.notifyConnectionLost(clientID, channel.hashCode());
 
         ConnectionDescriptor oldConnDescr = new ConnectionDescriptor(clientID, channel, true);
         m_clientIDs.remove(clientID, oldConnDescr);

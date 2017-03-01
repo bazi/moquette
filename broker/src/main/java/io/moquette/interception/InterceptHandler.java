@@ -35,9 +35,9 @@ public interface InterceptHandler {
 
     void onConnect(InterceptConnectMessage msg);
 
-    void onDisconnect(InterceptDisconnectMessage msg);
+    void onDisconnect(InterceptDisconnectMessage msg, int socketChannelHashCode);
 
-    void onConnectionLost(InterceptConnectionLostMessage msg);
+    void onConnectionLost(InterceptConnectionLostMessage msg, int socketChannelHashCode);
 
     void onPublish(InterceptPublishMessage msg);
 

@@ -45,12 +45,12 @@ public class BrokerInterceptorTest {
         }
 
         @Override
-        public void onDisconnect(InterceptDisconnectMessage msg) {
+        public void onDisconnect(InterceptDisconnectMessage msg, int socketChannelHashCode) {
             n.set(50);
         }
 
         @Override
-        public void onConnectionLost(InterceptConnectionLostMessage msg) {
+        public void onConnectionLost(InterceptConnectionLostMessage msg, int socketChannelHashCode) {
             n.set(55);
         }
 
@@ -102,7 +102,7 @@ public class BrokerInterceptorTest {
 
     @Test
     public void testNotifyClientDisconnected() throws Exception {
-        interceptor.notifyClientDisconnected("cli1234");
+        interceptor.notifyClientDisconnected("cli1234", 0);
         interval();
         assertEquals(50, n.get());
     }
