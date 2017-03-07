@@ -134,15 +134,16 @@ public class Server {
         m_initialized = true;
     }
 
-    public void internalPublishToClient(String clientId, String message) {
+    public int internalPublishToClient(String clientId, String message) {
         if (!m_initialized) {
             throw new IllegalStateException("Can't publish on a server is not yet started");
         }
         try {
-            m_processor.internalPublishToClient(clientId, message);
+            return m_processor.internalPublishToClient(clientId, message);
         } catch (RuntimeException ex) {
             LOG.error("Error sending message to client {}, message <{}>", clientId, message, ex);
         }
+        return 0;
     }
 
     /**

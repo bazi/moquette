@@ -336,13 +336,15 @@ public class ProtocolProcessor {
         m_interceptor.notifyTopicPublished(msg, clientID);
     }
 
-    public void internalPublishToClient(String clientId, String message) {
+    public int internalPublishToClient(String clientId, String message) {
         LOG.info("Sending to {} message <{}>", clientId, message);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientId);
         verifyToActivate(clientId, targetSession);
 
         ByteBuffer payload = ByteBuffer.wrap(message.getBytes());
-        directSend(targetSession, "grouvi_client", QOSType.LEAST_ONE, payload, false, targetSession.nextPacketId());
+        int packetId = targetSession.nextPacketId();
+        directSend(targetSession, "grouvi_client", QOSType.LEAST_ONE, payload, false, packetId);
+        return packetId;
     }
 
     public void disconnectClient(String clientId, String error) {
