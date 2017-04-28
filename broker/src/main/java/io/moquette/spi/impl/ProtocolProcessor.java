@@ -337,7 +337,7 @@ public class ProtocolProcessor {
     }
 
     public int internalPublishToClient(String clientId, String message) {
-        LOG.info("Sending to {} message <{}>", clientId, message);
+        LOG.info("Sending to {} message <{}>", clientId, message.length() > 200 ? message.substring(0, 50) : message);
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientId);
         verifyToActivate(clientId, targetSession);
 
