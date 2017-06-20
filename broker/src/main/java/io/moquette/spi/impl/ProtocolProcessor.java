@@ -337,7 +337,6 @@ public class ProtocolProcessor {
     }
 
     public int internalPublishToClient(String clientId, String message) {
-        LOG.info("Sending to {} message <{}>", clientId, message.length() > 200 ? message.substring(0, 50) : message);
         return internalPublishToClient(clientId, message.getBytes());
     }
 
