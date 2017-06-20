@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import org.apache.commons.codec.binary.Hex;
 
 /**
  * Launch a  configured version of the server.
@@ -136,12 +137,32 @@ public class Server {
 
     public int internalPublishToClient(String clientId, String message) {
         if (!m_initialized) {
-            throw new IllegalStateException("Can't publish on a server is not yet started");
+            throw new IllegalStateException("Can't publish on a server that is not yet started");
         }
         try {
             return m_processor.internalPublishToClient(clientId, message);
         } catch (RuntimeException ex) {
             LOG.error("Error sending message to client {}, message <{}>", clientId, message, ex);
+        }
+        return 0;
+    }
+
+    /**
+     *
+     * TODO: remove duplicates code parts
+     *
+     * @param clientId
+     * @param message
+     * @return
+     */
+    public int internalPublishToClient(String clientId, byte[] message) {
+        if (!m_initialized) {
+            throw new IllegalStateException("Can't publish on a server that is not yet started");
+        }
+        try {
+            return m_processor.internalPublishToClient(clientId, message);
+        } catch (RuntimeException ex) {
+            LOG.error("Error sending message to client {}, message <{}>", clientId, Hex.encodeHexString(message), ex);
         }
         return 0;
     }

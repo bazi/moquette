@@ -338,10 +338,14 @@ public class ProtocolProcessor {
 
     public int internalPublishToClient(String clientId, String message) {
         LOG.info("Sending to {} message <{}>", clientId, message.length() > 200 ? message.substring(0, 50) : message);
+        return internalPublishToClient(clientId, message.getBytes());
+    }
+
+    public int internalPublishToClient(String clientId, byte[] message) {
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientId);
         verifyToActivate(clientId, targetSession);
 
-        ByteBuffer payload = ByteBuffer.wrap(message.getBytes());
+        ByteBuffer payload = ByteBuffer.wrap(message);
         int packetId = targetSession.nextPacketId();
         directSend(targetSession, "grouvi_client", QOSType.LEAST_ONE, payload, false, packetId);
         return packetId;
