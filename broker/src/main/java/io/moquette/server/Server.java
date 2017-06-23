@@ -135,36 +135,12 @@ public class Server {
         m_initialized = true;
     }
 
-    public int internalPublishToClient(String clientId, String message) {
-        if (!m_initialized) {
-            throw new IllegalStateException("Can't publish on a server that is not yet started");
-        }
-        try {
-            return m_processor.internalPublishToClient(clientId, message);
-        } catch (RuntimeException ex) {
-            LOG.error("Error sending message to client {}, message <{}>", clientId, message, ex);
-        }
-        return 0;
+    public boolean initialized() {
+        return m_initialized;
     }
 
-    /**
-     *
-     * TODO: remove duplicates code parts
-     *
-     * @param clientId
-     * @param message
-     * @return
-     */
-    public int internalPublishToClient(String clientId, byte[] message) {
-        if (!m_initialized) {
-            throw new IllegalStateException("Can't publish on a server that is not yet started");
-        }
-        try {
-            return m_processor.internalPublishToClient(clientId, message);
-        } catch (RuntimeException ex) {
-            LOG.error("Error sending message to client {}, message <{}>", clientId, Hex.encodeHexString(message), ex);
-        }
-        return 0;
+    public ProtocolProcessor getProcessor() {
+        return m_processor;
     }
 
     /**
@@ -187,17 +163,5 @@ public class Server {
         SimpleMessaging.getInstance().shutdown();
         m_initialized = false;
         LOG.info("Server stopped");
-    }
-
-    /**
-     * Disconnects client
-     *
-     * @param clientId The id of the client
-     */
-    public void disconnectClient(String clientId, String error) {
-        if (!m_initialized) {
-            throw new IllegalStateException("Server is not yet started");
-        }
-        m_processor.disconnectClient(clientId, error);
     }
 }

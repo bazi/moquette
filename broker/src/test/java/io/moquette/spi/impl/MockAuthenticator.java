@@ -42,9 +42,8 @@ class MockAuthenticator implements IAuthenticator {
 
 
     @Override
-    public byte checkValid(ConnectMessage message, int socketChannelHashCode) {
+    public byte checkValid(ConnectMessage message, int socketChannelHashCode, boolean b) {
         // Not implemented
         return 0;
     }
-
 }

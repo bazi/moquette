@@ -54,10 +54,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Class responsible to handle the logic of MQTT protocol it's the director of
- * the protocol execution. 
- * 
+ * the protocol execution.
+ *
  * Used by the front facing class SimpleMessaging.
- * 
+ *
  * @author andrea
  */
 public class ProtocolProcessor {
@@ -90,11 +90,11 @@ public class ProtocolProcessor {
         public QOSType getQos() {
             return qos;
         }
-        
+
     }
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolProcessor.class);
-    
+
     protected ConcurrentMap<String, ConnectionDescriptor> m_clientIDs;
     private SubscriptionsStore subscriptions;
     private boolean allowAnonymous;
@@ -108,7 +108,7 @@ public class ProtocolProcessor {
 
     //maps clientID to Will testament, if specified on CONNECT
     private ConcurrentMap<String, WillMessage> m_willStore = new ConcurrentHashMap<>();
-    
+
     ProtocolProcessor() {}
 
     /**
@@ -173,7 +173,7 @@ public class ProtocolProcessor {
                 failedCredentials(channel);
                 return;
             }
-            byte validationResultCode = m_authenticator.checkValid(msg, channel.hashCode());
+            byte validationResultCode = m_authenticator.checkValid(msg, channel.hashCode(), m_clientIDs.containsKey(msg.getClientID()));
             if (validationResultCode != ConnAckMessage.CONNECTION_ACCEPTED) {
                 ConnAckMessage okResp = new ConnAckMessage();
                 okResp.setReturnCode(validationResultCode);
@@ -187,11 +187,7 @@ public class ProtocolProcessor {
             return;
         }
 
-        //if an old client with the same ID already exists close its session.
-        if (m_clientIDs.containsKey(msg.getClientID())) {
-            LOG.info("Found an existing connection with same client ID <{}>, forcing to close", msg.getClientID());
-            disconnectClient(msg.getClientID(), "{\"status\":401,\"error\":\"duplicate_connection\"}");
-        }
+        LOG.info("Duplicate connection for client {}?  {}", msg.getClientID(), m_clientIDs.containsKey(msg.getClientID()));
 
         ConnectionDescriptor connDescr = new ConnectionDescriptor(msg.getClientID(), channel, msg.isCleanSession());
         m_clientIDs.put(msg.getClientID(), connDescr);
@@ -280,7 +276,7 @@ public class ProtocolProcessor {
             clientSession.removeEnqueued(pubEvt.getGuid());
         }
     }
-    
+
     public void processPubAck(Channel session, PubAckMessage msg) {
         String clientID = NettyUtils.clientID(session);
         int messageID = msg.getMessageID();
@@ -336,10 +332,6 @@ public class ProtocolProcessor {
         m_interceptor.notifyTopicPublished(msg, clientID);
     }
 
-    public int internalPublishToClient(String clientId, String message) {
-        return internalPublishToClient(clientId, message.getBytes());
-    }
-
     public int internalPublishToClient(String clientId, byte[] message) {
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientId);
         verifyToActivate(clientId, targetSession);
@@ -350,15 +342,14 @@ public class ProtocolProcessor {
         return packetId;
     }
 
-    public void disconnectClient(String clientId, String error) {
+    public void disconnectClient(String clientId, byte[] error) {
         LOG.info("Forcing client with id <{}> to close", clientId);
         //clean the subscriptions if the old used a cleanSession = true
         Channel channel = m_clientIDs.get(clientId).channel;
         ClientSession clientSession = m_sessionsStore.sessionForClient(clientId);
 
         if (error != null) {
-            LOG.info("Sending error message {} to client with id {}", error, clientId);
-            ByteBuffer payload = ByteBuffer.wrap(error.getBytes());
+            ByteBuffer payload = ByteBuffer.wrap(error);
             directSend(clientSession, "grouvi_client", QOSType.MOST_ONE, payload, false, null);
         }
 
@@ -404,7 +395,7 @@ public class ProtocolProcessor {
         }
         m_messagesStore.storeRetained(topic, guid);
     }
-        
+
     /**
      * Specialized version to publish will testament message.
      */
@@ -481,7 +472,7 @@ public class ProtocolProcessor {
         pubMessage.setTopicName(topic);
         pubMessage.setQos(qos);
         pubMessage.setPayload(message);
-        
+
         LOG.info("send publish message to <{}> on topic <{}>", clientId, topic);
         if (LOG.isDebugEnabled()) {
             LOG.debug("content <{}>", DebugUtils.payload2Str(message));
@@ -508,14 +499,14 @@ public class ProtocolProcessor {
         LOG.debug("Session for clientId {} is {}", clientId, channel);
         channel.writeAndFlush(pubMessage);
     }
-    
+
     private void sendPubRec(String clientID, int messageID) {
         LOG.trace("PUB <--PUBREC-- SRV sendPubRec invoked for clientID {} with messageID {}", clientID, messageID);
         PubRecMessage pubRecMessage = new PubRecMessage();
         pubRecMessage.setMessageID(messageID);
         m_clientIDs.get(clientID).channel.writeAndFlush(pubRecMessage);
     }
-    
+
     private void sendPubAck(String clientId, int messageID) {
         LOG.trace("sendPubAck invoked");
         PubAckMessage pubAckMessage = new PubAckMessage();
@@ -534,7 +525,7 @@ public class ProtocolProcessor {
             LOG.error(null, t);
         }
     }
-    
+
     /**
      * Second phase of a publish QoS2 protocol, sent by publisher to the broker. Search the stored message and publish
      * to all interested subscribers.
@@ -565,7 +556,7 @@ public class ProtocolProcessor {
 
         sendPubComp(clientID, messageID);
     }
-    
+
     private void sendPubComp(String clientID, int messageID) {
         LOG.debug("PUB <--PUBCOMP-- SRV sendPubComp invoked for clientID {} ad messageID {}", clientID, messageID);
         PubCompMessage pubCompMessage = new PubCompMessage();
@@ -573,7 +564,7 @@ public class ProtocolProcessor {
 
         m_clientIDs.get(clientID).channel.writeAndFlush(pubCompMessage);
     }
-    
+
     public void processPubRec(Channel channel, PubRecMessage msg) {
         String clientID = NettyUtils.clientID(channel);
         int messageID = msg.getMessageID();
@@ -600,7 +591,7 @@ public class ProtocolProcessor {
         verifyToActivate(clientID, targetSession);
         targetSession.secondPhaseAcknowledged(messageID);
     }
-    
+
     public void processDisconnect(Channel channel) throws InterruptedException {
         String clientID = NettyUtils.clientID(channel);
         boolean cleanSession = NettyUtils.cleanSession(channel);
@@ -613,7 +604,7 @@ public class ProtocolProcessor {
 
         //cleanup the will store
         m_willStore.remove(clientID);
-        
+
         m_interceptor.notifyClientDisconnected(clientID, channel.hashCode());
         LOG.info("DISCONNECT client <{}> finished", clientID, cleanSession);
     }
@@ -637,7 +628,7 @@ public class ProtocolProcessor {
             m_willStore.remove(clientID);
         }
     }
-    
+
     /**
      * Remove the clientID from topic subscription, if not previously subscribed,
      * doesn't reply any error
@@ -683,7 +674,7 @@ public class ProtocolProcessor {
         channel.writeAndFlush(ackMessage);
         return;
     }
-    
+
     private boolean subscribeSingleTopic(final Subscription newSubscription) {
         subscriptions.add(newSubscription.asClientTopicCouple());
 

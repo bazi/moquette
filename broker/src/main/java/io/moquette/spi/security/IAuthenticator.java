@@ -29,7 +29,8 @@ public interface IAuthenticator {
     /**
      *
      * @param message
+     * @param b
      * @return MQTT Connect message Response code
      */
-    byte checkValid(ConnectMessage message, int socketChannelHashCode);
+    byte checkValid(ConnectMessage message, int socketChannelHashCode, boolean b);
 }
