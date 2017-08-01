@@ -16,7 +16,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <bintray.package>io.moquette.moquette-broker</bintray.package>
-        <netty.version>4.0.33.Final</netty.version>
+        <netty.version>4.1.13.Final</netty.version>
         <source.version>1.8</source.version>
         <target.version>1.8</target.version>
     </properties>
