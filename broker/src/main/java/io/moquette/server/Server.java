@@ -19,11 +19,13 @@ import io.moquette.BrokerConstants;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.proto.messages.PublishMessage;
 import io.moquette.server.config.MemoryConfig;
+import io.moquette.spi.IPersistentStore;
 import io.moquette.spi.impl.SimpleMessaging;
 import io.moquette.server.config.FilesystemConfig;
 import io.moquette.server.config.IConfig;
 import io.moquette.server.netty.NettyAcceptor;
 import io.moquette.spi.impl.ProtocolProcessor;
+import io.moquette.spi.persistence.MapDBPersistentStore;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import io.moquette.spi.security.ISslContextCreator;
@@ -108,12 +110,12 @@ public class Server {
      * set of InterceptHandler.
      * */
     public void startServer(IConfig config, List<? extends InterceptHandler> handlers) throws IOException {
-        startServer(config, handlers, null, null, null);
+        startServer(config, handlers, null, null, null, new MapDBPersistentStore(config));
     }
 
     public void startServer(IConfig config, List<? extends InterceptHandler> handlers,
                             ISslContextCreator sslCtxCreator, IAuthenticator authenticator,
-                            IAuthorizator authorizator) throws IOException {
+                            IAuthorizator authorizator, IPersistentStore persistentStore) throws IOException {
         if (handlers == null) {
             handlers = Collections.emptyList();
         }
@@ -123,7 +125,7 @@ public class Server {
             config.setProperty("intercept.handler", handlerProp);
         }
         LOG.info("Persistent store file: " + config.getProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME));
-        final ProtocolProcessor processor = SimpleMessaging.getInstance().init(config, handlers, authenticator, authorizator);
+        final ProtocolProcessor processor = SimpleMessaging.getInstance().init(config, handlers, authenticator, authorizator, persistentStore);
 
         if (sslCtxCreator == null) {
             sslCtxCreator = new DefaultMoquetteSslContextCreator(config);

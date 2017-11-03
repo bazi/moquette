@@ -332,7 +332,7 @@ public class ProtocolProcessor {
         m_interceptor.notifyTopicPublished(msg, clientID);
     }
 
-    public int internalPublishToClient(String clientId, byte[] message) {
+    public int sendContentMessage(String clientId, byte[] message) {
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientId);
         verifyToActivate(clientId, targetSession);
 
@@ -340,6 +340,14 @@ public class ProtocolProcessor {
         int packetId = targetSession.nextPacketId();
         directSend(targetSession, "grouvi_client", QOSType.LEAST_ONE, payload, false, packetId);
         return packetId;
+    }
+
+    public void sendSystemMessage(String clientId, byte[] message) {
+        ClientSession targetSession = m_sessionsStore.sessionForClient(clientId);
+        verifyToActivate(clientId, targetSession);
+
+        ByteBuffer payload = ByteBuffer.wrap(message);
+        directSend(targetSession, "grouvi_client", QOSType.MOST_ONE, payload, false, null);
     }
 
     public void disconnectClient(String clientId, byte[] error) {

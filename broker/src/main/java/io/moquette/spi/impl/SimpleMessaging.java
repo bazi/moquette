@@ -16,14 +16,14 @@
 package io.moquette.spi.impl;
 
 import io.moquette.BrokerConstants;
-import io.moquette.proto.messages.AbstractMessage;
-import io.moquette.spi.IMessagesStore;
 import io.moquette.interception.InterceptHandler;
+import io.moquette.proto.messages.AbstractMessage;
 import io.moquette.server.config.IConfig;
+import io.moquette.spi.IMessagesStore;
+import io.moquette.spi.IPersistentStore;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.impl.security.*;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
-import io.moquette.spi.persistence.MapDBPersistentStore;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
 import org.slf4j.Logger;
@@ -50,7 +50,7 @@ public class SimpleMessaging {
 
     private SubscriptionsStore subscriptions;
 
-    private MapDBPersistentStore m_mapStorage;
+    private IPersistentStore m_mapStorage;
 
     private BrokerInterceptor m_interceptor;
 
@@ -68,22 +68,21 @@ public class SimpleMessaging {
         return INSTANCE;
     }
 
-    /**
-     * Initialize the processing part of the broker.
-     * @param props the properties carrier where some props like port end host could be loaded.
-     *              For the full list check of configurable properties check moquette.conf file.
-     * @param embeddedObservers a list of callbacks to be notified of certain events inside the broker.
-     *                          Could be empty list of null.
-     * @param authenticator an implementation of the authenticator to be used, if null load that specified in config
-     *                      and fallback on the default one (permit all).
-     * @param authorizator an implementation of the authorizator to be used, if null load that specified in config
-     *                      and fallback on the default one (permit all).
-     * */
+        /**
+         * Initialize the processing part of the broker.
+         * @param props the properties carrier where some props like port end host could be loaded.
+         *              For the full list check of configurable properties check moquette.conf file.
+         * @param embeddedObservers a list of callbacks to be notified of certain events inside the broker.
+         *                          Could be empty list of null.
+         * @param authenticator an implementation of the authenticator to be used, if null load that specified in config
+         *                      and fallback on the default one (permit all).
+         * @param authorizator an implementation of the authorizator to be used, if null load that specified in config
+         *                      and fallback on the default one (permit all).
+         * */
     public ProtocolProcessor init(IConfig props, List<? extends InterceptHandler> embeddedObservers,
-                                  IAuthenticator authenticator, IAuthorizator authorizator) {
+                                  IAuthenticator authenticator, IAuthorizator authorizator, IPersistentStore persistentStore) {
         subscriptions = new SubscriptionsStore();
-
-        m_mapStorage = new MapDBPersistentStore(props);
+        m_mapStorage = persistentStore;
         m_mapStorage.initStore();
         IMessagesStore messagesStore = m_mapStorage.messagesStore();
         ISessionsStore sessionsStore = m_mapStorage.sessionsStore(messagesStore);
