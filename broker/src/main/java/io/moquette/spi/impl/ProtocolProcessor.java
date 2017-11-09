@@ -332,14 +332,12 @@ public class ProtocolProcessor {
         m_interceptor.notifyTopicPublished(msg, clientID);
     }
 
-    public int sendContentMessage(String clientId, byte[] message) {
+    public void sendContentMessage(String clientId, byte[] message, int packetId) {
         ClientSession targetSession = m_sessionsStore.sessionForClient(clientId);
         verifyToActivate(clientId, targetSession);
 
         ByteBuffer payload = ByteBuffer.wrap(message);
-        int packetId = targetSession.nextPacketId();
         directSend(targetSession, "grouvi_client", QOSType.LEAST_ONE, payload, false, packetId);
-        return packetId;
     }
 
     public void sendSystemMessage(String clientId, byte[] message) {
