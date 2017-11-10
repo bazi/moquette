@@ -45,7 +45,6 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
         AbstractMessage msg = (AbstractMessage) message;
-        LOG.info("Received a message of type {}", Utils.msgType2String(msg.getMessageType()));
         try {
             switch (msg.getMessageType()) {
                 case CONNECT:
@@ -76,6 +75,7 @@ public class NettyMQTTHandler extends ChannelInboundHandlerAdapter {
                     m_processor.processPubAck(ctx.channel(), (PubAckMessage) msg);
                     break;
                 case PINGREQ:
+                    LOG.info("Received message PINGREQ");
                     PingRespMessage pingResp = new PingRespMessage();
                     ctx.writeAndFlush(pingResp);
                     break;
