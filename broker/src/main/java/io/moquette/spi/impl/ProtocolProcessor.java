@@ -479,7 +479,6 @@ public class ProtocolProcessor {
         pubMessage.setQos(qos);
         pubMessage.setPayload(message);
 
-        LOG.info("send publish message to <{}> on topic <{}>", clientId, topic);
         if (LOG.isDebugEnabled()) {
             LOG.debug("content <{}>", DebugUtils.payload2Str(message));
         }
